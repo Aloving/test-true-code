@@ -6,14 +6,17 @@ import {
   Button,
   Flex,
   Modal,
+  Input,
 } from "antd";
-import { CloseOutlined, EditOutlined } from "@ant-design/icons";
+import { CloseOutlined, EditOutlined, SearchOutlined } from "@ant-design/icons";
 
 import { useProducts } from "../hooks/useProducts";
-
-import { IData } from "../interface/IData";
 import { useModalAssetsContext } from "../Modals";
 import { transformData } from "../Modals/transformData";
+import { useTableAssets } from "../hooks/useTableAssets";
+import styles from "./Edit.module.css";
+
+import { IData } from "../interface/IData";
 
 const PAGE_OFFSET = 10;
 
@@ -21,6 +24,7 @@ export const Edit = () => {
   const { data, loading } = useProducts(PAGE_OFFSET);
   const { deleteId, setModalData, setDeleteId, closeDeleteModal } =
     useModalAssetsContext();
+  const { searchString, setSearchString } = useTableAssets();
 
   const columns: TableColumnsType<IData> = [
     {
@@ -99,6 +103,16 @@ export const Edit = () => {
 
   return (
     <div>
+      <div>
+        <Input
+          className={styles.searchField}
+          prefix={<SearchOutlined />}
+          placeholder="Поиск"
+          value={searchString}
+          onChange={(e) => setSearchString(e.target.value as string)}
+        />
+      </div>
+
       <Table
         onChange={() => {
           console.log("asdasdasd");

@@ -1,23 +1,28 @@
 import { useMemo } from "react";
-import { Flex, Typography, Table, Image } from "antd";
+import { Flex, Typography, Table, Image, Input } from "antd";
 import type { TableColumnsType } from "antd";
-
-import styles from "./Catalog.module.css";
+import { SearchOutlined } from "@ant-design/icons";
 
 import { useProducts } from "../hooks/useProducts";
+import { useTableAssets } from "../hooks/useTableAssets";
+
+import styles from "./Catalog.module.css";
 
 import { IData } from "../interface/IData";
 
 const PAGE_OFFSET = 3;
 
 export const Catalog = () => {
+  const { setSearchString, searchString } = useTableAssets();
   const { setPage, loadMoreData, loading, data } = useProducts(PAGE_OFFSET);
-  const readyData = useMemo(() => {
-    return data.map((item) => ({
-      ...item,
-      key: item.id,
-    }));
-  }, [data]);
+  const readyData = useMemo(
+    () =>
+      data.map((item) => ({
+        ...item,
+        key: item.id,
+      })),
+    [data]
+  );
   const columns: TableColumnsType<IData> = [
     {
       title: "Фотография",
@@ -54,6 +59,15 @@ export const Catalog = () => {
 
   return (
     <Flex className={styles.root}>
+      <div>
+        <Input
+          className={styles.searchField}
+          prefix={<SearchOutlined />}
+          placeholder="Поиск"
+          value={searchString}
+          onChange={(e) => setSearchString(e.target.value as string)}
+        />
+      </div>
       <Table
         columns={columns}
         loading={loading}

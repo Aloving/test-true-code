@@ -19,13 +19,8 @@ export const IndexPage = () => {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
-  const {
-    isModalShown,
-    modalData,
-    setIsModalShown,
-    setModalData,
-    resetModalData,
-  } = useModalAssetsContext();
+  const { isModalShown, modalData, setIsModalShown, resetModalData } =
+    useModalAssetsContext();
   const navigate = useNavigate();
   const isIndex = useMatch("/")?.pathname === "/";
 
