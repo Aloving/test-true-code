@@ -5,7 +5,10 @@ import {
   OrderedListOutlined,
   ReadOutlined,
 } from "@ant-design/icons";
-import { useNavigate, useMatch, Outlet, useParams } from "react-router";
+import { useNavigate, useMatch, Outlet } from "react-router";
+
+import { useModalAssetsContext } from "../Modals";
+import { AddProduct } from "../AddProduct";
 
 import styles from "./IndexPage.module.css";
 import "./index.css";
@@ -16,6 +19,13 @@ export const IndexPage = () => {
   const {
     token: { colorBgContainer, borderRadiusLG },
   } = theme.useToken();
+  const {
+    isModalShown,
+    modalData,
+    setIsModalShown,
+    setModalData,
+    resetModalData,
+  } = useModalAssetsContext();
   const navigate = useNavigate();
   const isIndex = useMatch("/")?.pathname === "/";
 
@@ -50,7 +60,10 @@ export const IndexPage = () => {
               key: 3,
               icon: React.createElement(FormOutlined),
               label: "Добавить товар",
-              type: "item",
+              onClick: () => {
+                resetModalData();
+                setIsModalShown(true);
+              },
             },
           ]}
         />
@@ -74,47 +87,19 @@ export const IndexPage = () => {
           >
             <Outlet />
           </div>
+
+          {isModalShown && (
+            <AddProduct
+              modalData={modalData}
+              isModalOpened={isModalShown}
+              onCancel={() => setIsModalShown(false)}
+            />
+          )}
         </Content>
         <Footer style={{ textAlign: "center" }}>
-          Ant Design ©{new Date().getFullYear()} Created by Ant UED
+          ©{new Date().getFullYear()}
         </Footer>
       </Layout>
     </Layout>
   );
-  // return (
-  //   <Row gutter={18} className={styles.table}>
-  //     <Col span={6}>
-  //       <NavLink to="/edit/lists" end>
-  //         <Card
-  //           title={
-  //             <Flex align="center" gap="small">
-  //               <Typography>Добавить товар</Typography>
-  //               <FormOutlined />
-  //             </Flex>
-  //           }
-  //           hoverable
-  //           variant="outlined"
-  //         >
-  //           Таблица с добавлением продукта
-  //         </Card>
-  //       </NavLink>
-  //     </Col>
-  //     <Col span={6}>
-  //       <NavLink to="/products" end>
-  //         <Card
-  //           title={
-  //             <Flex align="center" gap="small">
-  //               <Typography>Просмотр</Typography>
-  //               <OrderedListOutlined />
-  //             </Flex>
-  //           }
-  //           hoverable
-  //           variant="outlined"
-  //         >
-  //           Просмотр добавленных карточек
-  //         </Card>
-  //       </NavLink>
-  //     </Col>
-  //   </Row>
-  // );
 };

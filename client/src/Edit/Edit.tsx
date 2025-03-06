@@ -1,15 +1,26 @@
-import { Typography, Table, TableColumnsType, Image, Button, Flex } from "antd";
+import {
+  Typography,
+  Table,
+  TableColumnsType,
+  Image,
+  Button,
+  Flex,
+  Modal,
+} from "antd";
 import { CloseOutlined, EditOutlined } from "@ant-design/icons";
 
 import { useProducts } from "../hooks/useProducts";
 
 import { IData } from "../interface/IData";
+import { useModalAssetsContext } from "../Modals";
+import { transformData } from "../Modals/transformData";
 
 const PAGE_OFFSET = 10;
 
 export const Edit = () => {
-  const { data, loading, setPage, loadMoreData, onPageChange } =
-    useProducts(PAGE_OFFSET);
+  const { data, loading } = useProducts(PAGE_OFFSET);
+  const { deleteId, setModalData, setDeleteId, closeDeleteModal } =
+    useModalAssetsContext();
 
   const columns: TableColumnsType<IData> = [
     {
@@ -65,7 +76,7 @@ export const Edit = () => {
     },
     {
       width: 200,
-      render: () => (
+      render: (values) => (
         <Flex>
           <div
             style={{
@@ -74,11 +85,38 @@ export const Edit = () => {
           >
             <Button icon={<EditOutlined />} type="text" />
           </div>
-          <Button icon={<CloseOutlined />} type="text" />
+          <Button
+            icon={<CloseOutlined />}
+            type="text"
+            onClick={() => {
+              setDeleteId(values.id);
+            }}
+          />
         </Flex>
       ),
     },
   ];
 
-  return <Table dataSource={data} columns={columns} loading={loading} />;
+  return (
+    <div>
+      <Table
+        onChange={() => {
+          console.log("asdasdasd");
+        }}
+        dataSource={data}
+        onRow={(data) => {
+          return {
+            onClick: () => setModalData(transformData(data)),
+          };
+        }}
+        columns={columns}
+        loading={loading}
+      />
+      <Modal
+        open={!!deleteId}
+        onCancel={() => closeDeleteModal()}
+        title="Вы уверены что хотите удалить?"
+      />
+    </div>
+  );
 };

@@ -81,7 +81,22 @@ const fakeLoad: (page?: number, offset?: number) => Promise<IProduct[]> = (
 export const useProducts = (pageOffset: number) => {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [deletingId, setDelitingId] = useState();
+  const [isDeliting, setIsDeliting] = useState(false);
+  // const [confirmModalShown, setConfirmModalShown] = useState(false);
+  // const [editModalShown, setEditModalShown] = useState(false);
+
   const [data, setData] = useState<IData[]>([]);
+
+  // const deleteProduct = () => {
+  //   setIsDeliting(() => true);
+
+  //   // setTimeout(() => {
+  //   //   setIsDeliting()
+  //   // }, 1000)
+  //   // setDelitingId();
+  // };
+  // const [] =
 
   const loadMoreData = useCallback(
     (page: number) => {
@@ -117,6 +132,9 @@ export const useProducts = (pageOffset: number) => {
   return {
     data,
     loading,
+    isDeliting,
+    deletingId,
+    setDelitingId,
     setPage,
     loadMoreData,
     onPageChange,
