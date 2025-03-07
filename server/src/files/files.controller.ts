@@ -53,6 +53,7 @@ export class FilesController {
     const imageObj = {
       url: urlToImage.pathname,
       filename: file.filename,
+      type: file.mimetype,
     };
 
     return Promise.resolve(imageObj);

@@ -4,10 +4,12 @@ import { Repository } from 'typeorm';
 
 import { PaginationDto, ProductDto } from './dto/products.dto';
 import { Product } from './entities/products.entity';
+import { Photo } from './entities/photo.entity';
 
 @Injectable()
 export class ProductsService {
   constructor(
+    @InjectRepository(Photo) private photoRepository: Repository<Photo>,
     @InjectRepository(Product) private productsRepository: Repository<Product>,
   ) {}
 
@@ -44,16 +46,24 @@ export class ProductsService {
   async findById(id: string): Promise<Product | null> {
     return await this.productsRepository.findOne({
       where: { id },
-      relations: ['pictures', 'sizes'],
     });
   }
 
-  async createProduct(data: ProductDto) {
+  async createProduct({ photo, ...data }: ProductDto) {
     const productObj = this.productsRepository.create(data);
+    const photoObj = this.photoRepository.create(photo);
 
-    console.log('productObj, ', productObj);
-    const product = await this.productsRepository.save(productObj);
+    const prd = {
+      ...productObj,
+      photo: photoObj,
+    };
 
-    return await this.productsRepository.save(product);
+    console.log('prd', prd);
+    const product = await this.productsRepository.save({
+      ...productObj,
+      photo: photoObj,
+    });
+
+    return product;
   }
 }

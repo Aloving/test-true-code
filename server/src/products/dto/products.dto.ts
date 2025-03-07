@@ -1,5 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsInt, IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+
+import { Photo } from '../../files/entities/photo.entity';
 
 export class ProductDto {
   @ApiProperty({
@@ -31,6 +33,9 @@ export class ProductDto {
   })
   @IsNumber()
   discount: number;
+
+  @IsNotEmpty()
+  photo: Photo;
 }
 
 export class PaginationDto {
@@ -52,19 +57,16 @@ export class PaginationDto {
     description: 'Строка поиска',
     example: '',
   })
-  @IsNotEmpty()
   search: string;
 
   @ApiProperty({
     enum: ['title', 'description', 'price', 'discount'],
-    example: 'title',
+    example: '',
   })
-  @IsInt()
   sortField: 'title' | 'description' | 'price' | 'discount';
 
   @ApiProperty({
     example: '',
   })
-  @IsInt()
   sortOrder: 'ASC' | 'DESC';
 }

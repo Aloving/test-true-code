@@ -1,4 +1,12 @@
-import { Entity, Column, PrimaryGeneratedColumn } from 'typeorm';
+import {
+  Entity,
+  Column,
+  OneToOne,
+  JoinColumn,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+
+import { Photo } from './photo.entity';
 
 @Entity()
 export class Product {
@@ -19,4 +27,10 @@ export class Product {
 
   @Column()
   price: number;
+
+  @OneToOne(() => Photo, (photo) => photo.product, {
+    cascade: true,
+  })
+  @JoinColumn()
+  photo: Photo;
 }
