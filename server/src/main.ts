@@ -1,5 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { NestExpressApplication } from '@nestjs/platform-express';
+import { ConfigService } from '@nestjs/config';
 
 import { AppModule } from './app.module';
 import { initSwagger } from './initSwagger';
@@ -10,11 +11,14 @@ async function bootstrap() {
     cors: true,
     bodyParser: true,
   });
+  const configService = app.get(ConfigService);
+  const port = configService.get('PORT');
+
   app.setGlobalPrefix('api');
 
   initSwagger(app);
 
-  await app.listen(process.env.PORT ?? 3000);
+  await app.listen(port || 3000);
 }
 
 bootstrap();

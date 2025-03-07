@@ -4,4 +4,5 @@ export declare class Product {
     description: string;
     banner: string;
     discount: number;
+    price: number;
 }

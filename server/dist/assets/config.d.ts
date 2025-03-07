@@ -1,5 +1,5 @@
 declare const _default: () => {
-    port: string | number;
+    port: string | undefined;
     pixabay: {
         key: string | undefined;
         per_page: number;
@@ -9,11 +9,11 @@ declare const _default: () => {
         image_type: string;
     };
     db: {
-        host: string;
+        host: string | undefined;
         port: number;
-        username: string;
-        password: string;
-        database: string;
+        username: string | undefined;
+        password: string | undefined;
+        database: string | undefined;
         ssl: boolean;
         synchronize: boolean;
         autoLoadEntities: boolean;

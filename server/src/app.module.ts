@@ -21,6 +21,7 @@ import config from '../assets/config';
     TypeOrmModule.forRoot({
       type: 'postgres',
       entities: [],
+
       ...config().db,
     }),
     ProductsModule,
