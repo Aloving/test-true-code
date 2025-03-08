@@ -1,142 +1,52 @@
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 
-import { IProduct } from "../interface/IProduct";
+import { productService } from "../api/productService";
+
+import { transformProductToData } from "../Modals/transformData";
+
+import { IPaginationData } from "../interface/IProductService";
 import { IData } from "../interface/IData";
 
-const dataToSet = [
-  {
-    id: "1",
-    banner:
-      "https://static.street-beat.ru/upload/resize_cache/iblock/1af/666_666_1/y4u4fqwdidibc6bdi3byscgan07u3siv.jpg",
-    title: "New Balance 574",
-    description: `New Balance 574 — классические беговые кроссовки, разработанные в 80-х
-    годах прошлого века. Тогда они мгновенно завоевали популярность и до
-    сих пор остаются ключевым силуэтом в классической линейке New Balance.
-    В этой паре 574 использована натуральная замша и текстиль с плотным
-    плетением. За амортизацию и стабилизацию при ходьбе отвечают
-    межподошва из ЭВА с технологией ENCAP®, сочетающей мягкий внутренний
-    материал и жесткий кант, удерживающий стопу.`,
-    price: 19000,
-    discount: 20,
-    article: "ML574EVG",
-  },
-  {
-    id: "2",
-    banner:
-      "https://static.street-beat.ru/upload/resize_cache/iblock/1af/666_666_1/y4u4fqwdidibc6bdi3byscgan07u3siv.jpg",
-    title: "New Balance 574",
-    description: `New Balance 574 — классические беговые кроссовки, разработанные в 80-х
-    годах прошлого века. Тогда они мгновенно завоевали популярность и до
-    сих пор остаются ключевым силуэтом в классической линейке New Balance.
-    В этой паре 574 использована натуральная замша и текстиль с плотным
-    плетением. За амортизацию и стабилизацию при ходьбе отвечают
-    межподошва из ЭВА с технологией ENCAP®, сочетающей мягкий внутренний
-    материал и жесткий кант, удерживающий стопу.`,
-    price: 19000,
-    discount: 20,
-    article: "ML574EVG",
-  },
-  {
-    id: "3",
-    banner:
-      "https://static.street-beat.ru/upload/resize_cache/iblock/1af/666_666_1/y4u4fqwdidibc6bdi3byscgan07u3siv.jpg",
-    title: "New Balance 574",
-    description: `New Balance 574 — классические беговые кроссовки, разработанные в 80-х
-    годах прошлого века. Тогда они мгновенно завоевали популярность и до
-    сих пор остаются ключевым силуэтом в классической линейке New Balance.
-    В этой паре 574 использована натуральная замша и текстиль с плотным
-    плетением. За амортизацию и стабилизацию при ходьбе отвечают
-    межподошва из ЭВА с технологией ENCAP®, сочетающей мягкий внутренний
-    материал и жесткий кант, удерживающий стопу.`,
-    price: 19000,
-    discount: 20,
-    article: "ML574EVG",
-  },
-  {
-    id: "4",
-    banner:
-      "https://static.street-beat.ru/upload/resize_cache/iblock/1af/666_666_1/y4u4fqwdidibc6bdi3byscgan07u3siv.jpg",
-    title: "New Balance 574",
-    description: `New Balance 574 — классические беговые кроссовки, разработанные в 80-х
-    годах прошлого века. Тогда они мгновенно завоевали популярность и до
-    сих пор остаются ключевым силуэтом в классической линейке New Balance.
-    В этой паре 574 использована натуральная замша и текстиль с плотным
-    плетением. За амортизацию и стабилизацию при ходьбе отвечают
-    межподошва из ЭВА с технологией ENCAP®, сочетающей мягкий внутренний
-    материал и жесткий кант, удерживающий стопу.`,
-    price: 19000,
-    discount: 20,
-    article: "ML574EVG",
-  },
-];
-
-const fakeLoad: (page?: number, offset?: number) => Promise<IProduct[]> = (
-  page,
-  offset
-) =>
-  new Promise((resolve) => {
-    setTimeout(() => resolve(dataToSet), 500);
-  });
-
-export const useProducts = (pageOffset: number) => {
-  const [page, setPage] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [deletingId, setDelitingId] = useState();
-  const [isDeliting, setIsDeliting] = useState(false);
-  // const [confirmModalShown, setConfirmModalShown] = useState(false);
-  // const [editModalShown, setEditModalShown] = useState(false);
-
+export const useProducts = (initialValues: IPaginationData) => {
+  const [pagination, setPagination] = useState(initialValues);
   const [data, setData] = useState<IData[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  // const deleteProduct = () => {
-  //   setIsDeliting(() => true);
+  const getProducts = (pagination: IPaginationData) => {
+    setIsLoading(() => true);
 
-  //   // setTimeout(() => {
-  //   //   setIsDeliting()
-  //   // }, 1000)
-  //   // setDelitingId();
-  // };
-  // const [] =
+    return productService
+      .getProducts(pagination)
+      .then((res) => {
+        if (res) {
+          const { data, take, page, ...pagination } = res;
 
-  const loadMoreData = useCallback(
-    (page: number) => {
-      setLoading(() => false);
-      if (loading) {
-        return;
-      }
-      setLoading(true);
-
-      fakeLoad(page, pageOffset).then((dataToSet) => {
-        setData(
-          dataToSet.map((item) => ({
-            ...item,
-            key: item.id,
-          }))
-        );
-        setLoading(() => false);
+          setPagination({
+            ...pagination,
+            offset: take,
+            page: page,
+          });
+          setData(transformProductToData(data));
+        }
+      })
+      .finally(() => {
+        setIsLoading(() => false);
       });
-    },
-    [loading, pageOffset]
-  );
+  };
 
-  const onPageChange = (page: number) => {
-    setPage(page);
-    setLoading(false);
-    loadMoreData(page);
+  const setPage = (pageNum: number) => {
+    getProducts({ ...pagination, page: pageNum });
   };
 
   useEffect(() => {
-    loadMoreData(1);
+    getProducts(initialValues);
   }, []);
 
   return {
     data,
-    loading,
-    isDeliting,
-    deletingId,
-    setDelitingId,
+    pagination,
+    isLoading,
+    total: pagination,
     setPage,
-    loadMoreData,
-    onPageChange,
   };
 };

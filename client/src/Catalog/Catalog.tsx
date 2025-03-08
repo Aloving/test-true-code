@@ -1,5 +1,5 @@
 import { useMemo } from "react";
-import { Flex, Typography, Table, Image, Input } from "antd";
+import { Flex, Typography, Table, Image, Input, Pagination } from "antd";
 import type { TableColumnsType } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 
@@ -9,27 +9,34 @@ import { useTableAssets } from "../hooks/useTableAssets";
 import styles from "./Catalog.module.css";
 
 import { IData } from "../interface/IData";
+import { IPaginationData } from "../interface/IProductService";
+import { IPhoto } from "../interface/IPhoto";
 
-const PAGE_OFFSET = 3;
+const PAGE_OFFSET = 5;
+const paginationExample = {
+  searchFields: [],
+  search: "",
+  sortField: "",
+  sortOrder: "",
+  total: 0,
+  offset: PAGE_OFFSET,
+  page: 1,
+} as IPaginationData;
 
 export const Catalog = () => {
   const { setSearchString, searchString } = useTableAssets();
-  const { setPage, loadMoreData, loading, data } = useProducts(PAGE_OFFSET);
-  const readyData = useMemo(
-    () =>
-      data.map((item) => ({
-        ...item,
-        key: item.id,
-      })),
-    [data]
-  );
+  const { setPage, pagination, data, isLoading } =
+    useProducts(paginationExample);
+
   const columns: TableColumnsType<IData> = [
     {
       title: "Фотография",
-      dataIndex: "banner",
-      render: (banner) => (
-        <Image src={banner} style={{ width: 200, height: 200 }} />
-      ),
+      dataIndex: "photo",
+      render: (photo) => {
+        return (
+          photo && <Image src={photo.url} style={{ width: 200, height: 200 }} />
+        );
+      },
     },
     {
       title: "Название",
@@ -70,14 +77,22 @@ export const Catalog = () => {
       </div>
       <Table
         columns={columns}
-        loading={loading}
+        loading={isLoading}
         bordered
-        pagination={{
-          pageSize: PAGE_OFFSET,
-        }}
-        dataSource={readyData}
+        footer={() => (
+          <Flex justify="end">
+            <Pagination
+              pageSize={pagination.offset}
+              total={pagination.total}
+              onChange={(pageNum) => {
+                setPage(pageNum);
+              }}
+            />
+          </Flex>
+        )}
+        pagination={false}
+        dataSource={data}
         onChange={({ current }) => {
-          loadMoreData(current || 1);
           setPage(current || 1);
         }}
       />

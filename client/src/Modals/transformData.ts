@@ -1,7 +1,7 @@
 import { IData } from "../interface/IData";
-import { IProductForm } from "../interface/IProduct";
+import { IProductForm, IProduct } from "../interface/IProduct";
 
-export const transformData = ({
+export const transformDataToForm = ({
   id,
   title,
   description,
@@ -16,3 +16,9 @@ export const transformData = ({
   discount: discount + "",
   article,
 });
+
+export const transformProductToData = (products: IProduct[] = []): IData[] =>
+  products.map(({ id, ...product }) => ({
+    ...product,
+    key: id,
+  }));

@@ -7,21 +7,32 @@ import {
   Flex,
   Modal,
   Input,
+  Pagination,
 } from "antd";
 import { CloseOutlined, EditOutlined, SearchOutlined } from "@ant-design/icons";
 
 import { useProducts } from "../hooks/useProducts";
 import { useModalAssetsContext } from "../Modals";
-import { transformData } from "../Modals/transformData";
+import { transformDataToForm } from "../Modals/transformData";
 import { useTableAssets } from "../hooks/useTableAssets";
 import styles from "./Edit.module.css";
 
 import { IData } from "../interface/IData";
+import { IPaginationData } from "../interface/IProductService";
 
-const PAGE_OFFSET = 10;
+const paginationExample = {
+  searchFields: [],
+  search: "",
+  sortField: "",
+  sortOrder: "",
+  total: 0,
+  offset: 3,
+  page: 1,
+} as IPaginationData;
 
 export const Edit = () => {
-  const { data, loading } = useProducts(PAGE_OFFSET);
+  const { data, isLoading, pagination, setPage } =
+    useProducts(paginationExample);
   const { deleteId, setModalData, setDeleteId, closeDeleteModal } =
     useModalAssetsContext();
   const { searchString, setSearchString } = useTableAssets();
@@ -29,11 +40,14 @@ export const Edit = () => {
   const columns: TableColumnsType<IData> = [
     {
       title: "Фотография",
-      dataIndex: "banner",
+      dataIndex: "photo",
       width: 150,
-      render: (banner) => (
-        <Image src={banner} style={{ width: 50, height: 50 }} />
-      ),
+      render: (photo) => {
+        console.log("photo", photo);
+        return (
+          photo && <Image src={photo.url} style={{ width: 50, height: 50 }} />
+        );
+      },
     },
     {
       title: "Название",
@@ -114,17 +128,26 @@ export const Edit = () => {
       </div>
 
       <Table
-        onChange={() => {
-          console.log("asdasdasd");
-        }}
+        pagination={false}
+        footer={() => (
+          <Flex justify="end">
+            <Pagination
+              pageSize={pagination.offset}
+              total={pagination.total}
+              onChange={(pageNum) => {
+                setPage(pageNum);
+              }}
+            />
+          </Flex>
+        )}
         dataSource={data}
         onRow={(data) => {
           return {
-            onClick: () => setModalData(transformData(data)),
+            onClick: () => setModalData(transformDataToForm(data)),
           };
         }}
         columns={columns}
-        loading={loading}
+        loading={isLoading}
       />
       <Modal
         open={!!deleteId}

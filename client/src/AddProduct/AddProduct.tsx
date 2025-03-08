@@ -5,6 +5,8 @@ import { Formik } from "formik";
 import * as yup from "yup";
 
 import styles from "./AddProduct.module.css";
+import { productService } from "../api/productService";
+import { useCreateProduct } from "../hooks/useCreateProduct";
 
 import { IProductForm } from "../interface/IProduct";
 
@@ -40,18 +42,31 @@ export const AddProduct: React.FC<IAddProductModalProps> = ({
   isModalOpened,
   onCancel,
 }) => {
+  // const {} = useCreateProduct();
+  const requestToIdle = () => {
+    // productService.getProducts()
+    // fetch("/api/brands").then(console.log).catch(console.error);
+  };
+
   return (
     <Formik
       initialValues={modalData}
       validationSchema={schema}
       enableReinitialize
       onSubmit={(values) => {
-        console.log("values - values", values);
+        // requestToIdle();
       }}
     >
       {({ errors, values, handleChange }) => {
         return (
-          <Modal open={isModalOpened} onCancel={onCancel} onOk={() => {}}>
+          <Modal
+            open={isModalOpened}
+            onCancel={onCancel}
+            onOk={() => {
+              console.log("asdasdas");
+              requestToIdle();
+            }}
+          >
             <Form<IProductForm>
               labelCol={{ span: 4 }}
               wrapperCol={{ span: 14 }}
@@ -66,12 +81,13 @@ export const AddProduct: React.FC<IAddProductModalProps> = ({
                 valuePropName="fileList"
               >
                 <Upload
-                  action=""
+                  action="/api/files/images"
                   listType="picture-card"
-                  //   onChange={(banner) => {
-                  //     setValue("banner", banner.file);
-                  //     // setValue("banner", banner)
-                  //   }}
+                  onChange={(image) => {
+                    console.log("image", image.file.response);
+                    // setValue("banner", banner.file);
+                    // setValue("banner", banner)
+                  }}
                 >
                   <button
                     style={{
