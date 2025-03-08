@@ -20,9 +20,6 @@ export class Product {
   description: string;
 
   @Column()
-  banner: string;
-
-  @Column()
   discount: number;
 
   @Column()

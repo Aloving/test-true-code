@@ -19,7 +19,7 @@ import config from '../assets/config';
       dest: './files',
     }),
     ServeStaticModule.forRoot({
-      rootPath: join(__dirname, '..', './static'),
+      rootPath: join(__dirname, '..', '../static'),
       serveRoot: '/static',
     }),
     TypeOrmModule.forRoot({

@@ -6,6 +6,8 @@ import { PaginationDto, ProductDto } from './dto/products.dto';
 import { Product } from './entities/products.entity';
 import { Photo } from './entities/photo.entity';
 
+import { DEFAULT_PAGE_OFFSET, DEFAULT_PAGE_NUMBER } from '../constants';
+
 @Injectable()
 export class ProductsService {
   constructor(
@@ -13,32 +15,41 @@ export class ProductsService {
     @InjectRepository(Product) private productsRepository: Repository<Product>,
   ) {}
 
-  async findAll({ page, offset, sortField, sortOrder, search }: PaginationDto) {
+  async findAll({
+    page = DEFAULT_PAGE_NUMBER,
+    offset = DEFAULT_PAGE_OFFSET,
+    sortField = '',
+    sortOrder = '',
+    search = '',
+    searchFields = [],
+  }: PaginationDto) {
+    const orderField = sortField
+      ? {
+          [sortField]: sortOrder,
+        }
+      : {};
     const fields = search
       ? Object.fromEntries(
-          new Map(
-            ['title', 'description', 'banner', 'price', 'discount'].map(
-              (field) => [field, search],
-            ),
-          ),
+          new Map(searchFields.map((field) => [field, search])),
         )
-      : null;
-    const take = offset || 0;
+      : {};
+    const take = offset || DEFAULT_PAGE_OFFSET;
     const skip = take ? take * (page - 1) : take;
 
     const [result, total] = await this.productsRepository.findAndCount({
       take,
       skip,
-      order: {
-        [sortField]: sortOrder,
-      },
-      where: fields || {},
+      order: orderField,
+      where: fields,
+      relations: ['photo'],
     });
 
     return {
-      total: Math.ceil(total / offset) - 1,
+      total,
       page: +page,
       data: result,
+      // data: result.map((item) => ({...item, photo: {...item.photo, url: ""}})),
+      take: +take,
       search,
     };
   }
@@ -53,12 +64,6 @@ export class ProductsService {
     const productObj = this.productsRepository.create(data);
     const photoObj = this.photoRepository.create(photo);
 
-    const prd = {
-      ...productObj,
-      photo: photoObj,
-    };
-
-    console.log('prd', prd);
     const product = await this.productsRepository.save({
       ...productObj,
       photo: photoObj,

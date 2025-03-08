@@ -1,5 +1,15 @@
 import { ApiResponse, ApiTags } from '@nestjs/swagger';
-import { Body, Controller, Param, Get, Post, Query } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Param,
+  Get,
+  Post,
+  Put,
+  Query,
+  ClassSerializerInterceptor,
+  UseInterceptors,
+} from '@nestjs/common';
 
 import { ProductsService } from './products.service';
 import { PaginationDto, ProductDto } from './dto/products.dto';
@@ -15,6 +25,7 @@ export class ProductsController {
     type: Product,
     description: 'Просмотр продуктов',
   })
+  @UseInterceptors(ClassSerializerInterceptor)
   @Get()
   async findAll(@Query() query: PaginationDto) {
     return await this.productsService.findAll(query);
@@ -35,7 +46,8 @@ export class ProductsController {
     type: Product,
     description: 'Создать продукт',
   })
-  @Post()
+  @UseInterceptors(ClassSerializerInterceptor)
+  @Put()
   async createProduct(@Body() productObj: ProductDto) {
     return await this.productsService.createProduct(productObj);
   }

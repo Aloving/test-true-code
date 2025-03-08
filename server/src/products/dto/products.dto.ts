@@ -59,14 +59,18 @@ export class PaginationDto {
   })
   search: string;
 
-  @ApiProperty({
-    enum: ['title', 'description', 'price', 'discount'],
-    example: '',
-  })
-  sortField: 'title' | 'description' | 'price' | 'discount';
+  @ApiProperty({ description: 'Поле для поиска', example: '' })
+  searchFields: string[];
 
   @ApiProperty({
+    description: 'Поле сортировки',
     example: '',
   })
-  sortOrder: 'ASC' | 'DESC';
+  sortField: string;
+
+  @ApiProperty({
+    description: 'Порядок сортировки',
+    example: '',
+  })
+  sortOrder: 'ASC' | 'DESC' | '';
 }
