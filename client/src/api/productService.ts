@@ -1,38 +1,69 @@
-import axios from "axios";
+import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 
-import { IProductForm } from "../interface/IProduct";
-import { IProductService } from "../interface/IProductService";
+import { IProduct, IProductForm } from "../interface/IProduct";
+import { IGetProductsResponseDto } from "../interface/IProductService";
 import { IGetProductsDto } from "../interface/IProductService";
 
-const paginationExample = {
-  search: "",
-  sortField: "",
-  sortOrder: "",
-  offset: "10",
-  page: "1",
-} as IGetProductsDto;
+export const productsApi = createApi({
+  baseQuery: fetchBaseQuery({ baseUrl: "/api" }),
+  tagTypes: ["Product"],
+  endpoints: (build) => ({
+    createProduct: build.mutation<IProduct, IProductForm>({
+      query: (body) => ({
+        url: "/products",
+        method: "PUT",
+        body,
+      }),
+      invalidatesTags: ["Product"],
+    }),
+    getProducts: build.query<IGetProductsResponseDto, IGetProductsDto>({
+      query: (body) => {
+        const params = new URLSearchParams(Object.entries(body));
 
-export const productService: IProductService = {
-  createProduct: (createProductDto: IProductForm | undefined) => {
-    return axios
-      .put("/api/products", createProductDto)
-      .then(({ data }) => data);
-  },
-  editProduct: (editProductDto: IProductForm) => {
-    return axios
-      .patch("/api/products", editProductDto)
-      .then(({ data }) => data);
-  },
-  getProducts: (getProductsDto: IGetProductsDto = paginationExample) => {
-    const params = new URLSearchParams(Object.entries(getProductsDto));
-
-    return axios
-      .get("/api/products?" + params, {
+        return {
+          url: "/products?" + params,
+          method: "GET",
+        };
+      },
+      transformResponse: (response: IGetProductsResponseDto) => ({
+        ...response,
+        data: response.data.map((item) => ({ ...item, key: item.id })),
+      }),
+      providesTags: (result) =>
+        result
+          ? [
+              ...result.data.map(({ id }) => ({
+                type: "Product" as const,
+                id,
+              })),
+              "Product",
+            ]
+          : ["Product"],
+    }),
+    getProduct: build.query<IProduct, string>({
+      query: (id) => ({
+        url: "/products" + `/${id}`,
         method: "GET",
-      })
-      .then(({ data }) => data);
-  },
-  getProductById: (id: string) => {
-    return axios.get("/api/products" + `/${id}`).then(({ data }) => data);
-  },
-};
+      }),
+    }),
+    deleteProduct: build.mutation<void, string>({
+      query: (id) => ({
+        url: "/products" + `/${id}`,
+        method: "delete",
+      }),
+      invalidatesTags: () => [{ type: "Product" }],
+    }),
+    editProduct: build.mutation<IProduct, IProductForm>({
+      query: (body) => {
+        return {
+          url: "/products",
+          method: "patch",
+          body,
+        };
+      },
+      invalidatesTags: (result, error, arg) => [
+        { type: "Product", id: arg.id },
+      ],
+    }),
+  }),
+});

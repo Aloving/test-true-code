@@ -1,14 +1,17 @@
 import React from "react";
-import { Form, Input, Modal, Typography, Upload } from "antd";
+import { Form, Input, Modal, Typography, Upload, UploadFile } from "antd";
 import { PlusOutlined } from "@ant-design/icons";
 import { Formik } from "formik";
 import * as yup from "yup";
 
-import styles from "./AddProduct.module.css";
-import { productService } from "../api/productService";
-import { useCreateProduct } from "../hooks/useCreateProduct";
+import { useImageUpload } from "../../hooks/useImageUpload";
 
-import { IProductForm } from "../interface/IProduct";
+import styles from "./AddProduct.module.css";
+import { initialProductValues } from "../../constants/initialValues";
+import { useCreateProduct } from "../../hooks/useCreateProduct";
+import { useEditProduct } from "../../hooks/useEditProduct";
+
+import { IProductForm } from "../../interface/IProduct";
 
 interface IAddProductModalProps {
   isModalOpened: boolean;
@@ -23,30 +26,36 @@ const schema = yup
     title: yup.string().required(),
     description: yup.string().required(),
     article: yup.string().required(),
-    // banner: yup.mixed().required(),
     price: yup.string().required(),
     discount: yup.string().required(),
+    photo: yup.object({
+      url: yup.string(),
+      filename: yup.string(),
+      type: yup.string(),
+    }),
   })
   .required();
 
-const initialValues = {
-  title: "",
-  description: "",
-  article: "",
-  price: "",
-  discount: "",
-};
-
 export const AddProduct: React.FC<IAddProductModalProps> = ({
-  modalData = initialValues,
+  modalData = initialProductValues,
   isModalOpened,
   onCancel,
 }) => {
-  // const {} = useCreateProduct();
-  const requestToIdle = () => {
-    // productService.getProducts()
-    // fetch("/api/brands").then(console.log).catch(console.error);
-  };
+  const isEditMode = modalData !== initialProductValues;
+  const { createProduct, isCreating } = useCreateProduct();
+  const { editProduct, isEditing } = useEditProduct();
+  const { photo, uploadImage, resetImage } = useImageUpload(modalData.photo);
+
+  const fileList: UploadFile[] = photo
+    ? [
+        {
+          uid: photo?.id || "",
+          name: photo?.filename || "",
+          url: photo?.url || "",
+          type: photo?.type || "",
+        },
+      ]
+    : [];
 
   return (
     <Formik
@@ -54,7 +63,11 @@ export const AddProduct: React.FC<IAddProductModalProps> = ({
       validationSchema={schema}
       enableReinitialize
       onSubmit={(values) => {
-        // requestToIdle();
+        if (isEditMode) {
+          editProduct(values).then(onCancel);
+          return;
+        }
+        createProduct({ ...values, photo }).then(onCancel);
       }}
     >
       {({ errors, values, handleChange }) => {
@@ -62,17 +75,14 @@ export const AddProduct: React.FC<IAddProductModalProps> = ({
           <Modal
             open={isModalOpened}
             onCancel={onCancel}
-            onOk={() => {
-              console.log("asdasdas");
-              requestToIdle();
-            }}
+            onOk={() => createProduct({ ...values, photo }).then(onCancel)}
           >
             <Form<IProductForm>
               labelCol={{ span: 4 }}
               wrapperCol={{ span: 14 }}
               layout="horizontal"
               style={{ maxWidth: 720 }}
-              // disabled={isLoading}
+              disabled={isCreating || isEditing}
             >
               <Form.Item
                 label={
@@ -80,28 +90,30 @@ export const AddProduct: React.FC<IAddProductModalProps> = ({
                 }
                 valuePropName="fileList"
               >
-                <Upload
-                  action="/api/files/images"
-                  listType="picture-card"
-                  onChange={(image) => {
-                    console.log("image", image.file.response);
-                    // setValue("banner", banner.file);
-                    // setValue("banner", banner)
-                  }}
-                >
-                  <button
-                    style={{
-                      color: "inherit",
-                      cursor: "inherit",
-                      border: 0,
-                      background: "none",
-                    }}
-                    type="button"
+                <div>
+                  <Upload
+                    customRequest={uploadImage}
+                    listType="picture-card"
+                    fileList={fileList}
+                    multiple={false}
+                    onRemove={resetImage}
                   >
-                    <PlusOutlined />
-                    <div style={{ marginTop: 8 }}>Баннер</div>
-                  </button>
-                </Upload>
+                    {!fileList.length && (
+                      <button
+                        style={{
+                          color: "inherit",
+                          cursor: "inherit",
+                          border: 0,
+                          background: "none",
+                        }}
+                        type="button"
+                      >
+                        <PlusOutlined />
+                        <div style={{ marginTop: 8 }}>Баннер</div>
+                      </button>
+                    )}
+                  </Upload>
+                </div>
               </Form.Item>
 
               <Form.Item label="Название">
@@ -126,6 +138,7 @@ export const AddProduct: React.FC<IAddProductModalProps> = ({
               <Form.Item label="Стоимость">
                 <div className={styles.formItem}>
                   <Input
+                    type="number"
                     name="price"
                     value={values.price || ""}
                     onChange={handleChange}
@@ -137,6 +150,7 @@ export const AddProduct: React.FC<IAddProductModalProps> = ({
               <Form.Item label="Скидка">
                 <div className={styles.formItem}>
                   <Input
+                    type="number"
                     name="discount"
                     value={values.discount || ""}
                     onChange={handleChange}

@@ -1,20 +1,22 @@
-import { IData } from "../interface/IData";
-import { IProductForm, IProduct } from "../interface/IProduct";
+import { IData } from "../../interface/IData";
+import { IProductForm, IProduct } from "../../interface/IProduct";
 
 export const transformDataToForm = ({
-  id,
+  key,
   title,
   description,
   price,
   discount,
   article,
-}: IData): IProductForm => ({
-  id,
+  photo,
+}: IProduct): IProductForm => ({
+  id: key,
   title,
   description,
   price: price + "",
   discount: discount + "",
   article,
+  photo,
 });
 
 export const transformProductToData = (products: IProduct[] = []): IData[] =>

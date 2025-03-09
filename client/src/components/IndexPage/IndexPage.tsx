@@ -7,11 +7,10 @@ import {
 } from "@ant-design/icons";
 import { useNavigate, useMatch, Outlet } from "react-router";
 
+import styles from "./IndexPage.module.css";
+
 import { useModalAssetsContext } from "../Modals";
 import { AddProduct } from "../AddProduct";
-
-import styles from "./IndexPage.module.css";
-import "./index.css";
 
 const { Header, Content, Footer, Sider } = Layout;
 

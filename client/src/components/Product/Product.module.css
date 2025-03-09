@@ -1,0 +1,37 @@
+.root {
+  max-width: 720px;
+  margin: 0 auto;
+}
+
+.imageWrapper {
+  margin-right: 24px;
+}
+
+.image {
+  width: 300px;
+  /* min-height: ; */
+}
+
+.title {
+  color: rgba(52, 52, 52, 0.88) !important;
+}
+
+.priceWrapper {
+  margin-top: 24px;
+}
+
+.priceText {
+  font-size: 16px;
+  margin-right: 24px;
+  margin-bottom: 0 !important;
+}
+
+.priceLabel {
+  font-size: 12px;
+  margin-bottom: 0 !important;
+}
+
+.discountPriceText {
+  font-size: 14px;
+  margin: 0 !important;
+}

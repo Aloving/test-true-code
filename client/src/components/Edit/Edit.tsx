@@ -11,39 +11,41 @@ import {
 } from "antd";
 import { CloseOutlined, EditOutlined, SearchOutlined } from "@ant-design/icons";
 
-import { useProducts } from "../hooks/useProducts";
+import { calcDiscount } from "../../utils/calcDiscount";
+import { useProducts } from "../../hooks/useProducts";
 import { useModalAssetsContext } from "../Modals";
 import { transformDataToForm } from "../Modals/transformData";
-import { useTableAssets } from "../hooks/useTableAssets";
 import styles from "./Edit.module.css";
 
-import { IData } from "../interface/IData";
-import { IPaginationData } from "../interface/IProductService";
+import { IPaginationData } from "../../interface/IProductService";
+import { IProduct } from "../../interface/IProduct";
 
+const PAGE_OFFSET = 10;
 const paginationExample = {
-  searchFields: [],
-  search: "",
-  sortField: "",
-  sortOrder: "",
-  total: 0,
-  offset: 3,
+  offset: PAGE_OFFSET,
   page: 1,
 } as IPaginationData;
 
 export const Edit = () => {
-  const { data, isLoading, pagination, setPage } =
-    useProducts(paginationExample);
   const { deleteId, setModalData, setDeleteId, closeDeleteModal } =
     useModalAssetsContext();
-  const { searchString, setSearchString } = useTableAssets();
+  const {
+    data,
+    search,
+    total,
+    offset,
+    isLoading,
+    deleteProduct,
+    setPage,
+    setSearch,
+  } = useProducts(paginationExample);
 
-  const columns: TableColumnsType<IData> = [
+  const columns: TableColumnsType<IProduct> = [
     {
       title: "Фотография",
       dataIndex: "photo",
       width: 150,
       render: (photo) => {
-        console.log("photo", photo);
         return (
           photo && <Image src={photo.url} style={{ width: 50, height: 50 }} />
         );
@@ -52,7 +54,7 @@ export const Edit = () => {
     {
       title: "Название",
       dataIndex: "title",
-      sorter: (a, b) => a.title.length - b.title.length,
+      sorter: (a, b) => a.title.localeCompare(b.title),
     },
     {
       title: "Описание",
@@ -61,6 +63,7 @@ export const Edit = () => {
       ellipsis: {
         showTitle: false,
       },
+      sorter: (a, b) => a.description.localeCompare(b.description),
       render: (description) => <Typography>{description}</Typography>,
     },
     {
@@ -88,7 +91,7 @@ export const Edit = () => {
             paddingLeft: 10,
           }}
         >
-          <Typography>{price - (price * discount) / 100}</Typography>
+          <Typography>{calcDiscount(price, discount)}</Typography>
         </Flex>
       ),
     },
@@ -107,7 +110,7 @@ export const Edit = () => {
             icon={<CloseOutlined />}
             type="text"
             onClick={() => {
-              setDeleteId(values.id);
+              setDeleteId(values.key);
             }}
           />
         </Flex>
@@ -122,8 +125,10 @@ export const Edit = () => {
           className={styles.searchField}
           prefix={<SearchOutlined />}
           placeholder="Поиск"
-          value={searchString}
-          onChange={(e) => setSearchString(e.target.value as string)}
+          value={search}
+          onChange={(e) => {
+            setSearch(e.target.value as string);
+          }}
         />
       </div>
 
@@ -132,18 +137,18 @@ export const Edit = () => {
         footer={() => (
           <Flex justify="end">
             <Pagination
-              pageSize={pagination.offset}
-              total={pagination.total}
-              onChange={(pageNum) => {
-                setPage(pageNum);
-              }}
+              pageSize={offset}
+              total={total}
+              onChange={(pageNum) => setPage(pageNum)}
             />
           </Flex>
         )}
         dataSource={data}
         onRow={(data) => {
           return {
-            onClick: () => setModalData(transformDataToForm(data)),
+            onClick: () => {
+              setModalData(transformDataToForm(data));
+            },
           };
         }}
         columns={columns}
@@ -151,7 +156,8 @@ export const Edit = () => {
       />
       <Modal
         open={!!deleteId}
-        onCancel={() => closeDeleteModal()}
+        onOk={() => deleteProduct(deleteId).then(closeDeleteModal)}
+        onCancel={closeDeleteModal}
         title="Вы уверены что хотите удалить?"
       />
     </div>

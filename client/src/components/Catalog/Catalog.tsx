@@ -1,34 +1,29 @@
-import { useMemo } from "react";
 import { Flex, Typography, Table, Image, Input, Pagination } from "antd";
 import type { TableColumnsType } from "antd";
+import { useNavigate } from "react-router";
 import { SearchOutlined } from "@ant-design/icons";
 
-import { useProducts } from "../hooks/useProducts";
-import { useTableAssets } from "../hooks/useTableAssets";
-
+import { useProducts } from "../../hooks/useProducts";
+import { calcDiscount } from "../../utils/calcDiscount";
 import styles from "./Catalog.module.css";
 
-import { IData } from "../interface/IData";
-import { IPaginationData } from "../interface/IProductService";
-import { IPhoto } from "../interface/IPhoto";
+import { IPaginationData } from "../../interface/IProductService";
+import { IProduct } from "../../interface/IProduct";
 
 const PAGE_OFFSET = 5;
 const paginationExample = {
-  searchFields: [],
-  search: "",
   sortField: "",
   sortOrder: "",
-  total: 0,
   offset: PAGE_OFFSET,
   page: 1,
 } as IPaginationData;
 
 export const Catalog = () => {
-  const { setSearchString, searchString } = useTableAssets();
-  const { setPage, pagination, data, isLoading } =
+  const { data, total, offset, search, isLoading, setPage, setSearch } =
     useProducts(paginationExample);
+  const navigate = useNavigate();
 
-  const columns: TableColumnsType<IData> = [
+  const columns: TableColumnsType<IProduct> = [
     {
       title: "Фотография",
       dataIndex: "photo",
@@ -41,7 +36,7 @@ export const Catalog = () => {
     {
       title: "Название",
       dataIndex: "title",
-      sorter: (a, b) => a.title.length - b.title.length,
+      sorter: (a, b) => a.title.localeCompare(b.title),
     },
     {
       title: "Описание",
@@ -56,11 +51,12 @@ export const Catalog = () => {
       title: "Стоимость",
       dataIndex: "price",
       sorter: (a, b) => a.price - b.price,
+      sortDirections: ["ascend", "descend"],
     },
     {
       title: "Стоимость со скидкой",
       dataIndex: "discount",
-      render: (discount, { price }) => price - (price * discount) / 100,
+      render: (discount, { price }) => calcDiscount(price, discount),
     },
   ];
 
@@ -71,8 +67,8 @@ export const Catalog = () => {
           className={styles.searchField}
           prefix={<SearchOutlined />}
           placeholder="Поиск"
-          value={searchString}
-          onChange={(e) => setSearchString(e.target.value as string)}
+          value={search}
+          onChange={(e) => setSearch(e.target.value as string)}
         />
       </div>
       <Table
@@ -82,14 +78,17 @@ export const Catalog = () => {
         footer={() => (
           <Flex justify="end">
             <Pagination
-              pageSize={pagination.offset}
-              total={pagination.total}
+              pageSize={offset}
+              total={total}
               onChange={(pageNum) => {
                 setPage(pageNum);
               }}
             />
           </Flex>
         )}
+        onRow={({ id }) => ({
+          onClick: () => navigate("/product" + `/${id}`),
+        })}
         pagination={false}
         dataSource={data}
         onChange={({ current }) => {

@@ -1,17 +1,12 @@
 import { useCallback, useState } from "react";
 
-import { IProductForm } from "../interface/IProduct";
+import { initialProductValues } from "../../constants/initialValues";
 
-const initialValues = {
-  title: "",
-  description: "",
-  article: "",
-  price: null,
-  discount: null,
-};
+import { IProductForm } from "../../interface/IProduct";
 
 export const useModalAssets = () => {
-  const [selectedProduct, setProduct] = useState<IProductForm>(initialValues);
+  const [selectedProduct, setProduct] =
+    useState<IProductForm>(initialProductValues);
   const [isModalShown, setIsModalShown] = useState(false);
   const [deleteId, setDeleteId] = useState("");
 
@@ -29,7 +24,7 @@ export const useModalAssets = () => {
 
   const resetModalData = useCallback(() => {
     setIsModalShown(() => false);
-    setProduct(() => initialValues);
+    setProduct(() => initialProductValues);
   }, []);
 
   return {
@@ -38,7 +33,6 @@ export const useModalAssets = () => {
     deleteId,
     setDeleteId,
     resetModalData,
-    // setDelitingId,
     closeDeleteModal,
     setModalData,
     setIsModalShown,

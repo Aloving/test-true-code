@@ -8,12 +8,14 @@ export interface IProduct {
   discount: number;
   article: string;
   photo: IPhoto;
+
+  key?: string;
 }
 
 export interface IProductForm
-  extends Omit<IProduct, "id" | "price" | "discount" | "banner"> {
+  extends Omit<IProduct, "id" | "price" | "discount" | "photo"> {
   id?: string;
-  banner: File | IPhoto;
+  photo?: IPhoto;
   price: string | null;
   discount: string | null;
 }

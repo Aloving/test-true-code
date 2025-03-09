@@ -1,52 +1,35 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
-import { productService } from "../api/productService";
-
-import { transformProductToData } from "../Modals/transformData";
+import { productsApi } from "../api/productService";
+import { FILTER_FIELDS } from "../constants/fields";
 
 import { IPaginationData } from "../interface/IProductService";
-import { IData } from "../interface/IData";
 
 export const useProducts = (initialValues: IPaginationData) => {
+  const [search, setSearch] = useState("");
   const [pagination, setPagination] = useState(initialValues);
-  const [data, setData] = useState<IData[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-
-  const getProducts = (pagination: IPaginationData) => {
-    setIsLoading(() => true);
-
-    return productService
-      .getProducts(pagination)
-      .then((res) => {
-        if (res) {
-          const { data, take, page, ...pagination } = res;
-
-          setPagination({
-            ...pagination,
-            offset: take,
-            page: page,
-          });
-          setData(transformProductToData(data));
-        }
-      })
-      .finally(() => {
-        setIsLoading(() => false);
-      });
-  };
+  const { data, isLoading } = productsApi.useGetProductsQuery({
+    ...pagination,
+    search,
+    searchFields: FILTER_FIELDS,
+  });
+  const [deleteProduct] = productsApi.useDeleteProductMutation();
+  const [createProduct] = productsApi.useCreateProductMutation();
 
   const setPage = (pageNum: number) => {
-    getProducts({ ...pagination, page: pageNum });
+    setPagination({ ...pagination, page: pageNum });
   };
 
-  useEffect(() => {
-    getProducts(initialValues);
-  }, []);
-
   return {
-    data,
-    pagination,
+    data: data?.data,
+    offset: pagination.offset,
     isLoading,
-    total: pagination,
+    total: data?.total,
+    search,
+
+    createProduct,
+    deleteProduct,
+    setSearch,
     setPage,
   };
 };
