@@ -80,9 +80,7 @@ export const Catalog = () => {
             <Pagination
               pageSize={offset}
               total={total}
-              onChange={(pageNum) => {
-                setPage(pageNum);
-              }}
+              onChange={(pageNum) => setPage(pageNum)}
             />
           </Flex>
         )}

@@ -9,10 +9,7 @@ export const useImageUpload = (initialValues?: IPhoto) => {
   const [photo, setPhoto] = useState(initialValues);
 
   const uploadImage = async ({ file }: UploadRequestOption) => {
-    return filesService
-      .uploadImageFile(file)
-      .then((res) => setPhoto(res))
-      .finally(() => {});
+    return filesService.uploadImageFile(file).then((res) => setPhoto(res));
   };
 
   const resetImage = () => {

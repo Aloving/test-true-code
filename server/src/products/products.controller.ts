@@ -9,6 +9,7 @@ import {
   Query,
   ClassSerializerInterceptor,
   UseInterceptors,
+  Delete,
 } from '@nestjs/common';
 
 import { ProductsService } from './products.service';
@@ -27,8 +28,16 @@ export class ProductsController {
   })
   @UseInterceptors(ClassSerializerInterceptor)
   @Get()
-  async findAll(@Query() query: PaginationDto) {
-    return await this.productsService.findAll(query);
+  async findAll(
+    @Query() query: PaginationDto,
+    @Query('searchFields') searchFieldsQuery: string,
+  ) {
+    const searchFields = searchFieldsQuery ? searchFieldsQuery.split(',') : [];
+
+    return await this.productsService.findAll({
+      ...query,
+      searchFields,
+    });
   }
 
   @ApiResponse({
@@ -49,6 +58,15 @@ export class ProductsController {
   @UseInterceptors(ClassSerializerInterceptor)
   @Put()
   async createProduct(@Body() productObj: ProductDto) {
-    return await this.productsService.createProduct(productObj);
+    return await this.productsService.create(productObj);
+  }
+
+  @ApiResponse({
+    status: 200,
+    description: 'Удалить по ID',
+  })
+  @Delete('/:id')
+  async deleteProduct(@Param('id') id: string) {
+    return await this.productsService.deleteById(id);
   }
 }

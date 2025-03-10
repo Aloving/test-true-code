@@ -28,27 +28,27 @@ export class ProductsService {
           [sortField]: sortOrder,
         }
       : {};
-    const fields = search
-      ? Object.fromEntries(
-          new Map(searchFields.map((field) => [field, search])),
-        )
-      : {};
     const take = offset || DEFAULT_PAGE_OFFSET;
     const skip = take ? take * (page - 1) : take;
 
-    const [result, total] = await this.productsRepository.findAndCount({
-      take,
-      skip,
-      order: orderField,
-      where: fields,
-      relations: ['photo'],
-    });
+    const [result, total] = await this.productsRepository
+      .createQueryBuilder('product')
+      .leftJoinAndSelect('product.photo', 'photo')
+      .where(
+        'LOWER(product.title) like LOWER(:search) OR LOWER(product.description) like LOWER(:search)',
+        {
+          search: `%${search}%`,
+        },
+      )
+      .take(take)
+      .skip(skip)
+      .cache(true)
+      .getManyAndCount();
 
     return {
       total,
       page: +page,
       data: result,
-      // data: result.map((item) => ({...item, photo: {...item.photo, url: ""}})),
       take: +take,
       search,
     };
@@ -57,10 +57,11 @@ export class ProductsService {
   async findById(id: string): Promise<Product | null> {
     return await this.productsRepository.findOne({
       where: { id },
+      relations: ['photo'],
     });
   }
 
-  async createProduct({ photo, ...data }: ProductDto) {
+  async create({ photo, ...data }: ProductDto) {
     const productObj = this.productsRepository.create(data);
     const photoObj = this.photoRepository.create(photo);
 
@@ -70,5 +71,9 @@ export class ProductsService {
     });
 
     return product;
+  }
+
+  async deleteById(id: string) {
+    await this.productsRepository.delete(id);
   }
 }

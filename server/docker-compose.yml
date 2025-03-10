@@ -1,0 +1,13 @@
+services: 
+  db: 
+    image: postgres 
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=root
+      - POSTGRES_DB=postgres
+      - POSTGRES_USER=admin
+    container_name: postgres
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data 
+    ports:
+      - '5432:5432'
